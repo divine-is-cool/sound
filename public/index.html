@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="en" class="dark">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Soundboard (Freesound)</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <header class="topbar">
+      <div class="topbar-inner">
+        <div class="brand">
+          <div class="brand-title">Soundboard</div>
+          <div class="brand-subtitle">Popular Freesound previews • 96 per page</div>
+        </div>
+
+        <div class="controls">
+          <label class="field">
+            <span class="field-label">Search</span>
+            <input id="searchInput" class="input" type="search" placeholder="Search sounds…" autocomplete="off" />
+          </label>
+
+          <label class="field volume-field">
+            <span class="field-label">Volume</span>
+            <div class="volume-row">
+              <input id="volumeSlider" class="slider" type="range" min="0" max="200" value="100" />
+              <output id="volumeValue" class="volume-value">100%</output>
+            </div>
+          </label>
+        </div>
+      </div>
+
+      <div class="paging">
+        <button id="prevPage" class="btn" type="button">Prev</button>
+        <div id="pageLabel" class="page-label">Page 1</div>
+        <button id="nextPage" class="btn" type="button">Next</button>
+      </div>
+    </header>
+
+    <main class="container">
+      <section class="section">
+        <div class="section-header">
+          <h2 class="section-title">Favorites</h2>
+          <div class="section-meta" id="favoritesMeta">0 saved</div>
+        </div>
+        <div id="favoritesGrid" class="grid"></div>
+        <div id="favoritesEmpty" class="empty">
+          No favorites yet. Tap ☆ under a sound to pin it here.
+        </div>
+      </section>
+
+      <section class="section">
+        <div class="section-header">
+          <h2 class="section-title" id="resultsTitle">Popular</h2>
+          <div class="section-meta" id="resultsMeta">Loading…</div>
+        </div>
+        <div id="resultsGrid" class="grid"></div>
+      </section>
+    </main>
+
+    <footer class="bottombar">
+      <button id="chaosBtn" class="btn toggle" type="button" aria-pressed="false" title="Chaos (C)">
+        Chaos <span class="keycap">C</span>
+      </button>
+      <button id="loopBtn" class="btn toggle" type="button" aria-pressed="false" title="Loop (L)">
+        Loop <span class="keycap">L</span>
+      </button>
+      <button id="stopBtn" class="btn danger" type="button" title="Stop (S)">
+        Stop <span class="keycap">S</span>
+      </button>
+    </footer>
+
+    <div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+    <script src="./app.js"></script>
+  </body>
+</html>
