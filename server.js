@@ -1,4 +1,6 @@
 import express from "express";
+import path from "path";
+import { fileURLToPath } from "url";
 
 const app = express();
 
@@ -13,11 +15,21 @@ if (!FREESOUND_API_KEY) {
 
 app.use(express.json());
 
+// --- Robust public/ directory resolution (fixes Cannot GET / on many deploy hosts)
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+const publicDir = path.resolve(__dirname, "public"); // public/ should be alongside server.js
+
 /**
  * Serve frontend static files.
- * You can deploy backend+frontend together by serving ../public here.
+ * Backend + frontend deployed together: serve ./public here.
  */
-app.use(express.static(new URL("../public", import.meta.url).pathname));
+app.use(express.static(publicDir));
+
+// Ensure "/" serves index.html explicitly
+app.get("/", (_req, res) => {
+  res.sendFile(path.join(publicDir, "index.html"));
+});
 
 const FREESOUND_BASE = "https://freesound.org/apiv2";
 
@@ -48,10 +60,6 @@ app.get("/api/popular", async (req, res) => {
     const page = Math.max(parseInt(req.query.page || "1", 10), 1);
     const pageSize = 96;
 
-    // Freesound doesn't have a single "popular" endpoint in all versions,
-    // but the search endpoint supports sorting by rating/score/popularity-like signals.
-    // We'll use search with empty query + sort=rating_desc as a "popular" proxy.
-    // If you prefer a different sort, change below.
     const fields = [
       "id",
       "name",
@@ -164,7 +172,6 @@ app.get("/api/sound/:id/preview", async (req, res) => {
     }
 
     const upstream = await fetch(previewUrl, {
-      // Passing range headers through is helpful for streaming/seek
       headers: req.headers.range ? { Range: req.headers.range } : undefined
     });
 
@@ -173,11 +180,9 @@ app.get("/api/sound/:id/preview", async (req, res) => {
       return;
     }
 
-    // Cache-friendly headers
     res.setHeader("Cache-Control", "public, max-age=31536000, immutable");
     res.setHeader("Accept-Ranges", "bytes");
 
-    // Copy content headers
     const contentType = upstream.headers.get("content-type") || "audio/mpeg";
     res.setHeader("Content-Type", contentType);
 
@@ -189,14 +194,12 @@ app.get("/api/sound/:id/preview", async (req, res) => {
 
     res.status(upstream.status);
 
-    // Stream body
     const body = upstream.body;
     if (!body) {
       res.end();
       return;
     }
 
-    // Node 18+ supports ReadableStream -> pipe via Web Streams API
     const reader = body.getReader();
 
     res.on("close", () => {
